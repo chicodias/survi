@@ -109,6 +109,7 @@ ggsurvplot(km_fit, data = df, risk.table = FALSE)
 
 ```{r}
 summary_table <- summary(km_fit, times = c(0,1:70))
+summary_table
 ```
  
 ##### Determining the optimal cutpoint for each gene expression
@@ -146,11 +147,6 @@ head(res.cat)
 ```
 
 ##### Fitting Survival Curves for each gene expression
-
-```{r}
-splots
-```
-
 
 ```{r}
 #defyning each fit for each gene
@@ -191,12 +187,43 @@ ggsave("myfile.pdf", res)
 ```
 
 
-###### **Ratio of Distribution of Event Times**
+##### Comparando múltiplas curvas de sobrevivência para os diferentes grupos moleculares
 
 ```{r}
-surv <- ggsurvevents()
+# Survival curves with global p-value
+fit2 <- survfit(Surv(time, event) ~ molecular_group, data = df)
+ggsurvplot(fit2, data = myeloma,
+           legend.title = "Grupos Moleculares",
+           legend.labs = levels(myeloma$molecular_group),
+           legend = "right",
+           pval = TRUE, palette = "lancet")
+
+# summary(fit2)
 ```
 
+O gráfico acima expõe todas as curvas de sobrevivência para os diferentes grupos moleculares. 
+
+Em nosso teste de hipótese temos duas hipóteses possíveis:
+
+$H_0:$ Não há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+$H_1$ Há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+
+Em nosso teste, utilizamos por padrão um $\alpha = 0.05$, ou seja, nosso Intervalo de Confiança é de 95%. 
+
+O valor-p resposta é um valor global que apenas nos indica se há alguma diferença entre as curvas de sobrevivência. Como $p = 0.047 < 0.05$, podemos rejeitar $H_0$ e concluir que existe uma diferença entre os grupos moleculares.
+
+Podemos realizar um Log-rank teste pareado entre os diferentes grupos moleculares, a fim de identificar quais grupos apresentam diferenças significativas de risco de morte.
+
+```{r}
+# Pairwise survdiff
+res <- pairwise_survdiff(Surv(time, event) ~ molecular_group,
+     data = myeloma)
+res
+```
+De acordo com o teste Log-Rank entre os grupos moleculares, podemos concluir que existe diferença significativa entre os seguintes grupos moleculares:
+
+* Proliferation e Cyclin D-2
+* Proliferation e Hyperdiploid
 
 
 # 4) Bibliográfia
