@@ -88,8 +88,6 @@ A análise de sobrevivência tem como objetivo a identificação de Neste estudo
  - [-] K-M
  - [ ] Atuarial 
  - [ ] Nelson-Aalen
- - [ ] EMV
- - [ ] Newton-Rapson
  - [ ] Testes de hipotese
  
  ###############################################################
