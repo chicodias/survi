@@ -14,6 +14,7 @@ output: pdf_document
 library(tidyverse)
 library(survival)
 library(survminer)
+library(knitr)
 ```
 
 # 1) Introdução
@@ -90,25 +91,46 @@ A análise de sobrevivência tem como objetivo a identificação de Neste estudo
  - [ ] Nelson-Aalen
  - [ ] Testes de hipotese
  
- ###############################################################
  
- I) *K-M Algoritmo*
+ I) **K-M Algoritmo**
+ 
+ Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de Kaplan-Meier.
  
 ```{r}
-  km_fit <- survfit(Surv(time, event) ~ 0, data = df)
+km_fit <- survfit(Surv(time, event) ~ 1, data = df)
 ```
+Definida a função de sobrevivência, podemos verificar a curva de sobrevivência considerando todas as covariáveis.
 
 ```{r}
 ggsurvplot(km_fit)
 ```
  
-
+Podemos verificar os resultados da estimação completa, usando `summary()`
 
 ```{r}
 summary(km_fit, times = c(0,1:70))
 ```
- 
-##### Determining the optimal cutpoint for each gene expression
+De  início, percebemos que não há tempo mediano, uma vez que as observações se encerram, antes de serem obtidas probabilidades de sobrevivência de 50%.
+
+As probabilidades de sobrevivência anuais, podem ser expressas na tabela abaixo.
+
+```{r}
+m <- matrix(c(0.91,0.83,0.78,0.67,0.60), ncol = 5)
+
+colnames(m) <- c("1 year", "2 years", "3 years", "4 years", "5 years")
+
+surv_times <- as_tibble(m)
+
+kable(surv_times)
+```
+Sendo assim, após os pacientes em estudo, após cinco anos apresentariam uma probabilidade de sobrevivência de 60%.
+
+### Determinando o *Cutpoint* para cada expressão gênica
+
+Temos diferentes níveis de expressão para os genes CRIM1", "DEPDC1", "WHSC1", "CCND1", "IRF4" e "TP53".
+Entretanto, a categorização desses valores nos auxilia na comparação entre as variáveis. O R nos permite estimar os *cutpoints* (Pontos de corte) idais, para cada variável numérica, permitindo reduzir os diversos valores a duas categorias: "high" e "low".
+
+O teste utilizado é o ***Maximally Selected Rank statistics***, que assume que um valor desconhecido de *X*, determina dois grupos distintos em *Y*. No nosso, caso, o teste busca encontrar o valor númerico do nível da expressão gênica que melhor separa os valores em dois grupos distintos.
 
 ```{r m}
 res.cut <- surv_cutpoint(df, time = "time", event = "event",
@@ -118,7 +140,7 @@ res.cut <- surv_cutpoint(df, time = "time", event = "event",
 summary(res.cut)
 ```
 
-Plot of each cutpoint
+#### Gráfico para cada "Cutpoint"
 
 ```{r}
 genes <- c("CCND1", "CRIM1","DEPDC1", "IRF4", "TP53", "WHSC1")
@@ -129,19 +151,18 @@ for(gene in genes){
 # plot(res.cut, "CRIM1", pallete = "npg")
 ```
 
-Categorizing the variables
+Definidos os melhores pontos que dividem os valores das expressões gênicas em dois grupos distintos, podemos enfim, categorizar nossas variáveis em dois grupos: ***high*** e ***low***.
 
 ```{r}
 res.cat <- surv_categorize(res.cut)
 head(res.cat)
 ```
 
-##### Fitting Survival Curves for each gene expression
 
-```{r}
-#splots
-```
+### Curvas de sobrevivência para cada expressão gênica
 
+Clique [**aqui**](https://drive.google.com/uc?export=download&id=1mnjJrOtBW850p_mvFHWppaIVTqyyAucS
+),para baixar o arquivo PDF com as curvas de sobrevivência para cada expressão gênica, considerando os níveis *low* e *high*.
 
 ```{r}
 #defyning each fit for each gene
@@ -165,22 +186,22 @@ splots[[5]] <- ggsurvplot(fit5, data = df, risk.table = TRUE, risk.table.height 
                           ggtheme = theme_minimal())
 splots[[6]] <- ggsurvplot(fit6, data = df, risk.table = TRUE, risk.table.height = 0.3,
                           ggtheme = theme_minimal())
-#arrange multiple ggsurvplots
-arrange_ggsurvplots(splots, print = TRUE, 
-                    ncol = 3, nrow = 2)
-if (TRUE) {
+# #arrange multiple ggsurvplots
+# arrange_ggsurvplots(splots, print = TRUE, 
+#                     ncol = 3, nrow = 2)
+
+
+if (FALSE) { #set to TRUE to save the results in a pdf
 # Arrange and save into pdf file
 res <- arrange_ggsurvplots(splots, print = FALSE)
 ggsave("myfile.pdf", res)
 }
+
 ```
 
 
-###### **Ratio of Distribution of Event Times**
 
-```{r}
-#surv <- ggsurvevents()
-```
+### Curvas de Sobrevivëncia para o status da amplificação do cromossomo *chr1q21*
 
 
 ```{r}
