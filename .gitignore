@@ -1,3 +1,5 @@
+#Ignorar todos os arquivos .pdf
+.pdf
 .Rproj.user
 .Rhistory
 .RData
