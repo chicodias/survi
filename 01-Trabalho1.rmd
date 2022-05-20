@@ -110,12 +110,15 @@ Podemos observar que as censuras presentes nesse conjunto de dados são do tipo 
 
 Nesse trabalho, nosso objetivo é a análise de dados de sobrevivência com censura a direita a partir de uma abordagem não-paramétrica, em que o interesse é identificar fatores de prognóstico para o mioma múltiplo a partir da amostra coletada.
 
-Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo
+Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo.
+
+Kaplan-Meier: O estimador de Kaplan–Meier, também conhecido como estimador do limite de produto, é uma estatística não paramétrica usada para estimar a função de sobrevivência a partir de dados de sobrevivência. Na pesquisa médica, muitas vezes é usado para medir a fração de pacientes que vivem por um determinado período de tempo após o tratamento. Em outros campos, os estimadores de Kaplan-Meier podem ser usados para medir o tempo que as pessoas permanecem desempregadas após uma perda de emprego ou o tempo até a falha de peças de máquinas.
+
 
 TODO: descrever os metodos utilizados
 
 ## 3) Análise de dados 
- 
+  
 Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de Kaplan-Meier.
 
 ### K-M Algoritmo
