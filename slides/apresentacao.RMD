@@ -9,25 +9,48 @@ author:
   - Gusthavo Parra
   - Felipe Tadaki T. Ida - 11027629
 date: "abril 2022"
-output: pdf_document
+institution: "Universidade de São Paulo"
+output: 
+  xaringan::moon_reader:
+    css: ["default", "assets/sydney-fonts.css", "assets/sydney.css"]
+    seal: true # show a title slide with YAML information
+    includes:
+      in_header: "assets/mathjax-equation-numbers.html"
+    nature:
+      beforeInit: ["assets/remark-zoom.js", "https://platform.twitter.com/widgets.js"]
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
 ---
-  
 
-\centering
-\raggedright
-\tableofcontents
-\newpage  
-  
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = FALSE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
 ```
 
-## 1) Introdução
 
-O mieloma múltiplo é o câncer que afeta aos plasmócitos, células da medula óssea responsáveis pela produção de anticorpos. Nos indivíduos acometidos, os plasmócitos são anormais e se multiplicam rapidamente, comprometendo a produção das outras células do sangue.
+## Introdução
 
+ - O mieloma múltiplo é o câncer que afeta aos plasmócitos, células da medula óssea responsáveis pela produção de anticorpos, comprometendo a produção das outras células do sangue.
 
-Foram obtidas medidas de expressão gênica em indivíduos com mieloma múltiplo, a partir de bases disponíveis no GEO (Id: GSE4581), um repositório de dados genômicos públicos do NCBI (National Center for Biotechnology Information). Nesse estudo, foram coletados dados de uma amostra de 256 pacientes, consistindo nas 11 colunas descritas abaixo:
+ -  Foram obtidas medidas de expressão gênica em indivíduos com mieloma múltiplo, a partir de bases disponíveis no GEO (Id: GSE4581)
+ 
+---
+
+## Introdução
+
+Amostra de 256 pacientes, consistindo nas 11 colunas descritas abaixo:
 
 
 |Variável   | Descrição  |
@@ -41,32 +64,34 @@ Foram obtidas medidas de expressão gênica em indivíduos com mieloma múltiplo
 |`DEPDC1`, `IRF4` |    Nível de expressão dos respectivos genes|
 |`TP53`,  `WHSC1` |  |
 
-
 O conjunto de dados também encontra-se disponível no R através do comando `survminer::myeloma`. 
 
-```{r message=FALSE}
+---
+
+```{r message=FALSE, include=FALSE}
 library(tidyverse)
 library(survival)
 library(survminer)
-library(pander)
+library(knitr)
 library(biostat3)
-```
 
-
-```{r}
 # Conjunto de dados utilizado
 df <- survminer::myeloma %>% rownames_to_column %>% tibble
 # Substituindo o indicador de censura por um tipo booleano
 df$event <- as.logical(df$event)
-head(df)
 ```
 
-```{r}
-# tabela descritivas da variável resposta
-pander(summary(df$time))
-```
+## Conjunto de dados
 
 ```{r}
+kable(head(df[,1:6], 1))
+```
+
+---
+
+# Tempo versus raiz quadrada da contagem
+
+```{r echo=FALSE}
 # expressoes genicas que iremos analisar
 gex_cols <- c("CCND1", "CRIM1", "DEPDC1","IRF4","TP53","WHSC1") 
 # grafico de tempo versus raiz quadrada da contagem
@@ -79,6 +104,10 @@ ggplot(aes(y=time, x=sqrt(value))) +
        color = "Censura",
        title = "Expressão gênica versus tempo de censura")
 ```
+
+---
+
+# Tempo versus raiz quadrada da contagem
 
 ```{r}
 ## trocar por tempo vs raiz quadrada da contagem
@@ -99,20 +128,28 @@ ggplot(aes(x=1:nrow(df), y=time)) +
        title = "Expressão gênica versus tempo de censura")
 ```
 
+---
+
+# Conjunto de dados
+
 Podemos observar que as censuras presentes nesse conjunto de dados são do tipo aleatória e a direita. Além disso, o tratamento utilizado nesses pacientes foi sempre o mesmo (TT2), dessa forma, não havendo um grupo de controle.
 
 
-## 2) Metodologia
+---
+
+# Metodologia
 
 Nesse trabalho, nosso objetivo é a análise de dados de sobrevivência com censura a direita a partir de uma abordagem não-paramétrica, em que o interesse é identificar fatores de prognóstico para o mioma múltiplo a partir da amostra coletada.
 
 Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo
 
-TODO: descrever os metodos utilizados
+---
 
-## 3) Análise de dados 
+# Análise de dados 
  
 Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de Kaplan-Meier.
+
+---
 
 ### K-M Algoritmo
 
@@ -123,9 +160,13 @@ km_fit <- survfit(Surv(time, event) ~ 1, data = df)
 
 Definida a função de sobrevivência, podemos verificar a curva de sobrevivência considerando todas as covariáveis.
 
+---
+
 ```{r}
 ggsurvplot(km_fit, data = df, risk.table = FALSE)
 ```
+
+---
 
 Podemos verificar os resultados da estimação completa, usando `summary()`
 
@@ -133,9 +174,13 @@ Podemos verificar os resultados da estimação completa, usando `summary()`
 summary(km_fit, times = seq(0,70,5))
 ```
 
+---
+
 De  início, percebemos que não há tempo mediano, uma vez que as observações se encerram antes de serem obtidas probabilidades de sobrevivência de 50%.
 
 Sendo assim, os pacientes em estudo apresentariam uma probabilidade de sobrevivência de 60% após cinco anos.
+
+---
 
 #### Determinando o *Cutpoint* para cada expressão gênica
 
@@ -144,14 +189,18 @@ Entretanto, a categorização desses valores nos auxilia na comparação entre a
 
 O teste utilizado é o ***Maximally Selected Rank statistics***, que assume que um valor desconhecido de $X$, determina dois grupos distintos em $Y$. No nosso, caso, o teste busca encontrar o valor númerico do nível da expressão gênica que melhor separa os valores em dois grupos distintos.
 
+---
+
 ##### Cutpoint ótimo de cada expressão
 
 ```{r}
 res.cut <- surv_cutpoint(df, time = "time", event = "event",
                          variables = gex_cols,
                          progressbar = FALSE)
-pander(summary(res.cut))
+kable(summary(res.cut))
 ```
+
+---
 
 #### Gráfico para cada "Cutpoint"
 
@@ -161,10 +210,11 @@ plot(res.cut, gex_cols, pallete = "npg")
 
 Definidos os melhores pontos que dividem os valores das expressões gênicas em dois grupos distintos, podemos enfim, categorizar nossas variáveis em dois grupos: ***high*** e ***low***.
 
+---
 
 ```{r}
 res.cat <- surv_categorize(res.cut)
-pander(head(res.cat))
+kable(head(res.cat))
 ```
 
 
@@ -196,6 +246,7 @@ arrange_ggsurvplots(splots, print = TRUE,
 
 ```
 
+---
 
 ##### Curvas de sobrevivência para os diferentes grupos moleculares
 
@@ -210,6 +261,9 @@ ggsurvplot(fit2, data = myeloma,
 # summary(fit2)
 ```
 
+
+---
+
 O gráfico acima expõe todas as curvas de sobrevivência para os diferentes grupos moleculares. 
 
 Em nosso teste de hipótese temos duas hipóteses possíveis:
@@ -220,6 +274,8 @@ $H_1$ Há diferença entre as curvas de sobrevivência para os diferentes grupos
 Em nosso teste, utilizamos por padrão um $\alpha = 0.05$, ou seja, nosso Intervalo de Confiança é de 95%. 
 
 O valor-p resposta é um valor global que apenas nos indica se há alguma diferença entre as curvas de sobrevivência. Como $p = 0.047 < 0.05$, podemos rejeitar $H_0$ e concluir que existe uma diferença entre os grupos moleculares.
+
+---
 
 Podemos realizar um Log-rank teste pareado entre os diferentes grupos moleculares, a fim de identificar quais grupos apresentam diferenças significativas de risco de morte.
 
@@ -232,11 +288,14 @@ res <- pairwise_survdiff(Surv(time, event) ~ molecular_group,
 res
 ```
 
+---
+
 De acordo com o teste Log-Rank entre os grupos moleculares, podemos concluir que existe diferença significativa entre os seguintes grupos moleculares:
 
 * Proliferation e Cyclin D-2
 * Proliferation e Hyperdiploid
 
+---
 
 #### Curvas de Sobrevivencia para o status da amplificação do cromossomo *chr1q21*
 
@@ -258,7 +317,11 @@ ggsurvplot(
 )
 ```
 
+---
+
 O p-valor do grafico acima é do teste log-rank, e como o valor deu menor que 0.05, podemos concluir que há evidência estatística de que as curvas de sobrevivência são diferentes para a amplificação do cromossomo *chr1q21. Em seguida temos que fazer o teste 2 a 2 para essas curvas
+
+---
 
 
 ```{r}
@@ -270,6 +333,8 @@ abc
 
 Podemos concluir que existe diferença significativa entre os seguintes status do cromossomo: 2 copias e 3 copias (p-valor abaixo de 0.05)
 
+---
+
 ### Algoritmo Nelson-Aalen
 
 ```{r}
@@ -277,10 +342,14 @@ Podemos concluir que existe diferença significativa entre os seguintes status d
  summary(na_fit, times = seq(0,70,5))
 ```
 
+---
+
 ```{r}
  plot(na_fit, conf.int=T,  xlab="Tempo (em meses)", ylab="S(t) estimada", bty="n")
 
 ```
+
+---
 
 ### Tábua Atuarial
 
@@ -289,11 +358,15 @@ lifetab2(Surv(time, event) ~ 1, data = df, breaks = seq(0,70,5))
 ```
 
 
-## 4) Conclusão
+---
+
+# Conclusão
 
 TODO: escrever a conclusão
 
-## 5) Bibliografia
+---
+
+# Bibliografia
 
 ```{r}
 citation("survminer")

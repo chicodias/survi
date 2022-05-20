@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Análise de sobrevivência em pacientes com mieloma múltiplo</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Francisco Rosa Dias de Miranda - 4402962" />
+    <meta name="author" content="Heitor Carvalho Pinheiro - 11833351" />
+    <meta name="author" content="Lua Nardi Quito - 11371270" />
+    <meta name="author" content="Vitor Pinho Iecks Ponce - 10785968" />
+    <meta name="author" content="Gusthavo Parra" />
+    <meta name="author" content="Felipe Tadaki T. Ida - 11027629" />
+    <script src="apresentacao_files/header-attrs/header-attrs.js"></script>
+    <link href="apresentacao_files/remark-css/default.css" rel="stylesheet" />
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } },
+      });
+    </script>
+    <style>
+    .mjx-mrow a {
+      color: black;
+      pointer-events: none;
+      cursor: default;
+    }
+    </style>
+    <link rel="stylesheet" href="assets/sydney-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="assets/sydney.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Análise de sobrevivência em pacientes com mieloma múltiplo
+]
+.subtitle[
+## SME0821 - Análise de Sobrevivência - Atividade I
+]
+.author[
+### Francisco Rosa Dias de Miranda - 4402962
+]
+.author[
+### Heitor Carvalho Pinheiro - 11833351
+]
+.author[
+### Lua Nardi Quito - 11371270
+]
+.author[
+### Vitor Pinho Iecks Ponce - 10785968
+]
+.author[
+### Gusthavo Parra
+]
+.author[
+### Felipe Tadaki T. Ida - 11027629
+]
+.date[
+### abril 2022
+]
+
+---
+
+
+
+
+
+
+## Introdução
+
+ - O mieloma múltiplo é o câncer que afeta aos plasmócitos, células da medula óssea responsáveis pela produção de anticorpos, comprometendo a produção das outras células do sangue.
+
+ -  Foram obtidas medidas de expressão gênica em indivíduos com mieloma múltiplo, a partir de bases disponíveis no GEO (Id: GSE4581)
+ 
+---
+
+## Introdução
+
+Amostra de 256 pacientes, consistindo nas 11 colunas descritas abaixo:
+
+
+|Variável   | Descrição  |
+|-----------|------------|
+| `molecular_group`  | Subgrupos moleculares dos pacientes |
+| `chr1q21_status`   | Status de amplificação do cromossomo 1q21 |
+| `treatment`        | Todos os pacientes receberam o tratamento TT2|
+| `event`            | Status de sobrevivência, 0 = vivo, 1 = morto |
+| `time`            |  Tempo de sobrevivência, em meses |
+| `CCND1`, `CRIM1`, | |
+|`DEPDC1`, `IRF4` |    Nível de expressão dos respectivos genes|
+|`TP53`,  `WHSC1` |  |
+
+O conjunto de dados também encontra-se disponível no R através do comando `survminer::myeloma`. 
+
+---
+
+
+
+## Conjunto de dados
+
+
+|rowname  |molecular_group |chr1q21_status |treatment |event |  time|
+|:--------|:---------------|:--------------|:---------|:-----|-----:|
+|GSM50986 |Cyclin D-1      |3 copies       |TT2       |FALSE | 69.24|
+
+---
+
+# Tempo versus raiz quadrada da contagem
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-3-1.png" width="100%" /&gt;
+
+---
+
+# Tempo versus raiz quadrada da contagem
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-4-1.png" width="100%" /&gt;
+
+---
+
+# Conjunto de dados
+
+Podemos observar que as censuras presentes nesse conjunto de dados são do tipo aleatória e a direita. Além disso, o tratamento utilizado nesses pacientes foi sempre o mesmo (TT2), dessa forma, não havendo um grupo de controle.
+
+
+---
+
+# Metodologia
+
+Nesse trabalho, nosso objetivo é a análise de dados de sobrevivência com censura a direita a partir de uma abordagem não-paramétrica, em que o interesse é identificar fatores de prognóstico para o mioma múltiplo a partir da amostra coletada.
+
+Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo
+
+---
+
+# Análise de dados 
+ 
+Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de Kaplan-Meier.
+
+---
+
+### K-M Algoritmo
+
+
+
+
+Definida a função de sobrevivência, podemos verificar a curva de sobrevivência considerando todas as covariáveis.
+
+---
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-6-1.png" width="100%" /&gt;
+
+---
+
+Podemos verificar os resultados da estimação completa, usando `summary()`
+
+
+```
+## Call: survfit(formula = Surv(time, event) ~ 1, data = df)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     0    256       1    0.996 0.00390        0.988        1.000
+##     5    250       5    0.977 0.00946        0.958        0.995
+##    10    239      11    0.934 0.01556        0.904        0.965
+##    15    228      11    0.891 0.01951        0.853        0.930
+##    20    220       8    0.859 0.02173        0.818        0.903
+##    25    179       8    0.827 0.02378        0.781        0.875
+##    30    149       7    0.791 0.02628        0.741        0.845
+##    35    116       3    0.774 0.02758        0.722        0.830
+##    40     94       8    0.716 0.03225        0.655        0.782
+##    45     69       2    0.698 0.03385        0.635        0.767
+##    50     50       3    0.663 0.03780        0.592        0.741
+##    55     27       2    0.632 0.04187        0.555        0.719
+##    60     10       1    0.597 0.05222        0.503        0.708
+##    65      6       0    0.597 0.05222        0.503        0.708
+```
+
+---
+
+De  início, percebemos que não há tempo mediano, uma vez que as observações se encerram antes de serem obtidas probabilidades de sobrevivência de 50%.
+
+Sendo assim, os pacientes em estudo apresentariam uma probabilidade de sobrevivência de 60% após cinco anos.
+
+---
+
+#### Determinando o *Cutpoint* para cada expressão gênica
+
+Temos diferentes níveis de expressão para os genes CRIM1", "DEPDC1", "WHSC1", "CCND1", "IRF4" e "TP53".
+Entretanto, a categorização desses valores nos auxilia na comparação entre as variáveis. O R nos permite estimar os *cutpoints* (Pontos de corte) ideais, para cada variável numérica, permitindo reduzir os diversos valores a duas categorias: "high" e "low".
+
+O teste utilizado é o ***Maximally Selected Rank statistics***, que assume que um valor desconhecido de `\(X\)`, determina dois grupos distintos em `\(Y\)`. No nosso, caso, o teste busca encontrar o valor númerico do nível da expressão gênica que melhor separa os valores em dois grupos distintos.
+
+---
+
+##### Cutpoint ótimo de cada expressão
+
+
+|       | cutpoint| statistic|
+|:------|--------:|---------:|
+|CCND1  |    450.7|  1.976398|
+|CRIM1  |     82.3|  1.968317|
+|DEPDC1 |    279.8|  4.275451|
+|IRF4   |  12052.9|  2.177788|
+|TP53   |    748.3|  2.928906|
+|WHSC1  |   3205.6|  3.361330|
+
+---
+
+#### Gráfico para cada "Cutpoint"
+
+
+```
+## $CCND1
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-1.png" width="100%" /&gt;
+
+```
+## 
+## $CRIM1
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-2.png" width="100%" /&gt;
+
+```
+## 
+## $DEPDC1
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-3.png" width="100%" /&gt;
+
+```
+## 
+## $IRF4
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-4.png" width="100%" /&gt;
+
+```
+## 
+## $TP53
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-5.png" width="100%" /&gt;
+
+```
+## 
+## $WHSC1
+```
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-9-6.png" width="100%" /&gt;
+
+Definidos os melhores pontos que dividem os valores das expressões gênicas em dois grupos distintos, podemos enfim, categorizar nossas variáveis em dois grupos: ***high*** e ***low***.
+
+---
+
+
+|  time|event |CCND1 |CRIM1 |DEPDC1 |IRF4 |TP53 |WHSC1 |
+|-----:|:-----|:-----|:-----|:------|:----|:----|:-----|
+| 69.24|FALSE |high  |high  |high   |high |low  |low   |
+| 66.43|FALSE |high  |low   |low    |high |high |low   |
+| 66.50|FALSE |low   |high  |low    |low  |high |high  |
+| 42.67|TRUE  |low   |low   |low    |low  |high |high  |
+| 65.00|FALSE |high  |low   |low    |low  |low  |low   |
+| 65.20|FALSE |high  |low   |high   |high |high |low   |
+
+
+#### Curvas de sobrevivência para cada expressão gênica
+
+Curvas de sobrevivência para cada expressão gênica, considerando os níveis *low* e *high*.
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-11-1.png" width="100%" /&gt;
+
+---
+
+##### Curvas de sobrevivência para os diferentes grupos moleculares
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-12-1.png" width="100%" /&gt;
+
+
+---
+
+O gráfico acima expõe todas as curvas de sobrevivência para os diferentes grupos moleculares. 
+
+Em nosso teste de hipótese temos duas hipóteses possíveis:
+
+`\(H_0:\)` Não há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+`\(H_1\)` Há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+
+Em nosso teste, utilizamos por padrão um `\(\alpha = 0.05\)`, ou seja, nosso Intervalo de Confiança é de 95%. 
+
+O valor-p resposta é um valor global que apenas nos indica se há alguma diferença entre as curvas de sobrevivência. Como `\(p = 0.047 &lt; 0.05\)`, podemos rejeitar `\(H_0\)` e concluir que existe uma diferença entre os grupos moleculares.
+
+---
+
+Podemos realizar um Log-rank teste pareado entre os diferentes grupos moleculares, a fim de identificar quais grupos apresentam diferenças significativas de risco de morte.
+
+
+
+```
+## 
+## 	Pairwise comparisons using Log-Rank test 
+## 
+## data:  myeloma and molecular_group 
+## 
+##                  Cyclin D-1 Cyclin D-2 Hyperdiploid Low bone disease MAF  
+## Cyclin D-2       0.723      -          -            -                -    
+## Hyperdiploid     0.943      0.723      -            -                -    
+## Low bone disease 0.723      0.988      0.644        -                -    
+## MAF              0.644      0.447      0.523        0.485            -    
+## MMSET            0.328      0.103      0.103        0.103            0.723
+## Proliferation    0.103      0.038      0.038        0.062            0.485
+##                  MMSET
+## Cyclin D-2       -    
+## Hyperdiploid     -    
+## Low bone disease -    
+## MAF              -    
+## MMSET            -    
+## Proliferation    0.527
+## 
+## P value adjustment method: BH
+```
+
+---
+
+De acordo com o teste Log-Rank entre os grupos moleculares, podemos concluir que existe diferença significativa entre os seguintes grupos moleculares:
+
+* Proliferation e Cyclin D-2
+* Proliferation e Hyperdiploid
+
+---
+
+#### Curvas de Sobrevivencia para o status da amplificação do cromossomo *chr1q21*
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-14-1.png" width="100%" /&gt;
+
+---
+
+O p-valor do grafico acima é do teste log-rank, e como o valor deu menor que 0.05, podemos concluir que há evidência estatística de que as curvas de sobrevivência são diferentes para a amplificação do cromossomo *chr1q21. Em seguida temos que fazer o teste 2 a 2 para essas curvas
+
+---
+
+
+
+```
+## 
+## 	Pairwise comparisons using Log-Rank test 
+## 
+## data:  myeloma and chr1q21_status 
+## 
+##           2 copies 3 copies
+## 3 copies  0.025    -       
+## 4+ copies 0.193    0.508   
+## 
+## P value adjustment method: BH
+```
+
+Podemos concluir que existe diferença significativa entre os seguintes status do cromossomo: 2 copias e 3 copias (p-valor abaixo de 0.05)
+
+---
+
+### Algoritmo Nelson-Aalen
+
+
+```
+## Call: survfit(formula = coxph(Surv(time, event) ~ 1, data = df))
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     0    256       1    0.996 0.00389        0.989        1.000
+##     5    250       5    0.977 0.00944        0.958        0.995
+##    10    239      11    0.934 0.01553        0.904        0.965
+##    15    228      11    0.891 0.01947        0.853        0.930
+##    20    220       8    0.860 0.02169        0.818        0.903
+##    25    179       8    0.827 0.02373        0.782        0.875
+##    30    149       7    0.792 0.02623        0.742        0.845
+##    35    116       3    0.774 0.02752        0.722        0.830
+##    40     94       8    0.717 0.03217        0.656        0.782
+##    45     69       2    0.699 0.03376        0.636        0.768
+##    50     50       3    0.664 0.03767        0.594        0.742
+##    55     27       2    0.633 0.04168        0.556        0.720
+##    60     10       1    0.599 0.05159        0.506        0.709
+##    65      6       0    0.599 0.05159        0.506        0.709
+```
+
+---
+
+&lt;img src="apresentacao_files/figure-html/unnamed-chunk-17-1.png" width="100%" /&gt;
+
+---
+
+### Tábua Atuarial
+
+
+```
+##        tstart tstop nsubs nlost nrisk nevent      surv         pdf      hazard
+## 0-5         0     5   256     0 256.0      6 1.0000000 0.004687500 0.004743083
+## 5-10        5    10   250     0 250.0     11 0.9765625 0.008593750 0.008997955
+## 10-15      10    15   239     0 239.0     11 0.9335938 0.008593750 0.009421842
+## 15-20      15    20   228     0 228.0      8 0.8906250 0.006250000 0.007142857
+## 20-25      20    25   220    33 203.5      8 0.8593750 0.006756757 0.008020050
+## 25-30      25    30   179    23 167.5      7 0.8255912 0.006900464 0.008536585
+## 30-35      30    35   149    30 134.0      3 0.7910889 0.003542189 0.004528302
+## 35-40      35    40   116    14 109.0      8 0.7733780 0.011352337 0.015238095
+## 40-45      40    45    94    23  82.5      2 0.7166163 0.003474503 0.004907975
+## 45-50      45    50    69    16  61.0      3 0.6992438 0.006877807 0.010084034
+## 50-55      50    55    50    21  39.5      2 0.6648547 0.006732706 0.010389610
+## 55-60      55    60    27    16  19.0      1 0.6311912 0.006644118 0.010810811
+## 60-65      60    65    10     4   8.0      0 0.5979706 0.000000000 0.000000000
+## 65-70      65    70     6     6   3.0      0 0.5979706 0.000000000 0.000000000
+## 70-Inf     70   Inf     0     0   0.0      0 0.5979706          NA          NA
+##            se.surv      se.pdf   se.hazard
+## 0-5    0.000000000 0.001891105 0.001936219
+## 5-10   0.009455526 0.002534833 0.002712299
+## 10-15  0.015561930 0.002534833 0.002840004
+## 15-20  0.019506821 0.002174908 0.002524979
+## 20-25  0.021727144 0.002347671 0.002834946
+## 25-30  0.023932025 0.002560874 0.003225791
+## 30-35  0.026245434 0.002025474 0.002614249
+## 35-40  0.027577954 0.003884710 0.005383570
+## 40-45  0.032034021 0.002431847 0.003470201
+## 45-50  0.033530156 0.003886048 0.005820169
+## 50-55  0.037299082 0.004654004 0.007344085
+## 55-60  0.042330039 0.006482242 0.010806862
+## 60-65  0.051514121         NaN         NaN
+## 65-70  0.051514121         NaN         NaN
+## 70-Inf 0.051514121          NA          NA
+```
+
+
+---
+
+# Conclusão
+
+TODO: escrever a conclusão
+
+---
+
+# Bibliografia
+
+
+```
+## 
+## To cite package 'survminer' in publications use:
+## 
+##   Kassambara A, Kosinski M, Biecek P (2021). _survminer: Drawing
+##   Survival Curves using 'ggplot2'_. R package version 0.4.9,
+##   &lt;https://CRAN.R-project.org/package=survminer&gt;.
+## 
+## A BibTeX entry for LaTeX users is
+## 
+##   @Manual{,
+##     title = {survminer: Drawing Survival Curves using 'ggplot2'},
+##     author = {Alboukadel Kassambara and Marcin Kosinski and Przemyslaw Biecek},
+##     year = {2021},
+##     note = {R package version 0.4.9},
+##     url = {https://CRAN.R-project.org/package=survminer},
+##   }
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="assets/remark-zoom.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%",
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
