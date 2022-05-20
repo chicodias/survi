@@ -114,6 +114,18 @@ Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados
 
 Kaplan-Meier: O estimador de Kaplan–Meier, também conhecido como estimador do limite de produto, é uma estatística não paramétrica usada para estimar a função de sobrevivência a partir de dados de sobrevivência. Na pesquisa médica, muitas vezes é usado para medir a fração de pacientes que vivem por um determinado período de tempo após o tratamento. Em outros campos, os estimadores de Kaplan-Meier podem ser usados para medir o tempo que as pessoas permanecem desempregadas após uma perda de emprego ou o tempo até a falha de peças de máquinas.
 
+Tabela Atuarial: Uma tabela de  vida atuarial mostra a probabilidade de uma pessoa em certa idade morrer antes de seu próximo aniversário. É frequentemente usado por companhias de seguro de vida para calcular a expectativa de vida restante para pessoas em diferentes idades e estágios e a probabilidade de sobreviver a um determinado ano de idade.
+
+Como homens e mulheres têm taxas de mortalidade diferentes, uma tabela de vida atuarial é calculada separadamente para homens e mulheres. Uma tábua de vida atuarial também é chamada de tábua de mortalidade, tabela de vida ou tabela atuarial.
+As seguradoras utilizam tabelas de vida atuariais para ajudar a precificar produtos e projetar futuros eventos segurados. As tabelas de vida atuariais com base matemática e estatística auxiliam as seguradoras ao mostrar probabilidades de eventos, como morte, doença e invalidez.
+
+Uma tabela de vida atuarial também pode incluir fatores para diferenciar riscos variáveis, como tabagismo, ocupação, situação socioeconômica e até jogos de azar e dívidas. A modelagem preditiva computadoriqzada permite aos atuários a capacidade de calcular para uma ampla variedade de circunstâncias e resultados prováveis.
+
+Estimador de Nelson-Aalen:O estimador de Nelson-Aalen é um estimador não paramétrico da função de taxa de risco cumulativa em caso de dados censurados ou dados incompletos. É usado na teoria da sobrevivência, engenharia de confiabilidade e seguro de vida para estimar o número acumulado de eventos esperados.
+
+Um "evento" pode ser a falha de um componente não reparável, a morte de um ser humano ou qualquer ocorrência para a qual a unidade experimental permaneça no estado "falhou" (por exemplo, morte) a partir do ponto em que mudou.
+
+
 
 TODO: descrever os metodos utilizados
 
