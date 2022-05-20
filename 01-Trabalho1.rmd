@@ -6,7 +6,7 @@ author:
   - Heitor Carvalho Pinheiro - 11833351
   - Lua Nardi Quito - 11371270
   - Vitor Pinho Iecks Ponce - 10785968
-  - Gusthavo Parra
+  - Gusthavo Henrique Parra da Silva - 7086506 
   - Felipe Tadaki T. Ida - 11027629
 date: "abril 2022"
 output: pdf_document
@@ -80,6 +80,10 @@ ggplot(aes(y=time, x=sqrt(value))) +
        title = "Expressão gênica versus tempo de censura")
 ```
 
+
+Foram plotadas em cada gráfico, as covariáveis de expressões gênicas em relação ao tempo de censura e a sua respectiva expressão gênica, no eixo X temos a raiz quadrada da contagem de pacientes e no eixo Y é o tempo (em meses).
+
+Observa-se que não há aparente relação linear entre o tempo até o evento e a contagem do evento de interesse
 ```{r}
 ## trocar por tempo vs raiz quadrada da contagem
   df %>% arrange(desc(time)) %>% 
