@@ -6,7 +6,7 @@ author:
   - Heitor Carvalho Pinheiro - 11833351
   - Lua Nardi Quito - 11371270
   - Vitor Pinho Iecks Ponce - 10785968
-  - Gusthavo Parra
+  - Gusthavo Henrique Parra da Silva - 7086506 
   - Felipe Tadaki T. Ida - 11027629
 date: "abril 2022"
 output: pdf_document
