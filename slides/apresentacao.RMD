@@ -6,7 +6,7 @@ author:
   - Heitor Carvalho Pinheiro - 11833351
   - Lua Nardi Quito - 11371270
   - Vitor Pinho Iecks Ponce - 10785968
-  - Gusthavo Parra
+  - Gusthavo Henrique Parra da Silva - 7086506
   - Felipe Tadaki T. Ida - 11027629
 date: "abril 2022"
 institution: "Universidade de São Paulo"
@@ -362,7 +362,10 @@ lifetab2(Surv(time, event) ~ 1, data = df, breaks = seq(0,70,5))
 
 # Conclusão
 
-TODO: escrever a conclusão
+Podemos concluir que pacientes do grupo molecular Proliferation, em média, tem uma menor chance de sobrevivência em relação aos grupos Cyclin D-2 e Hyperdiploid.
+Além disso, pacientes cujo cromossomo chr1q21 possui 2 cópias tem mais chance de sobreviver do que quando o cromossomo tem 3 cópias.
+
+Não nota-se uma diferença significativa nos três estimadores K-M, N-A e Aturial. A interpretação feita no estimador K-M pode ser usada nos dois restantes, ou seja, de que não há tempo mediano, uma vez que as observações se encerram antes de serem obtidas probabilidades de sobrevivência de 50%. Logo, os pacientes em estudo apresentariam uma probabilidade de sobrevivência de 60% após cinco anos.
 
 ---
 
