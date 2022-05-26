@@ -46,9 +46,10 @@ knitr::opts_chunk$set(
 
  -  Foram obtidas medidas de expressão gênica em indivíduos com mieloma múltiplo, a partir de bases disponíveis no GEO (Id: GSE4581)
  
+ 
 ---
 
-## Introdução
+## Conjunto de dados
 
 Amostra de 256 pacientes, consistindo nas 11 colunas descritas abaixo:
 
@@ -83,13 +84,18 @@ df$event <- as.logical(df$event)
 
 ## Conjunto de dados
 
+  - As censuras presentes nesse conjunto de dados são do tipo aleatória e a direita.
+  
+  - O tratamento utilizado nesses pacientes foi sempre o mesmo (TT2), dessa forma, não havendo um grupo de controle.
+
+
 ```{r}
-kable(head(df[,1:6], 1))
+kable(head(df[,1:6], 5))
 ```
 
 ---
 
-# Tempo versus raiz quadrada da contagem
+## Tempo versus raiz quadrada da contagem
 
 ```{r echo=FALSE}
 # expressoes genicas que iremos analisar
@@ -107,7 +113,7 @@ ggplot(aes(y=time, x=sqrt(value))) +
 
 ---
 
-# Tempo versus raiz quadrada da contagem
+## Tempos observados no estudo
 
 ```{r}
 ## trocar por tempo vs raiz quadrada da contagem
@@ -128,30 +134,19 @@ ggplot(aes(x=1:nrow(df), y=time)) +
        title = "Expressão gênica versus tempo de censura")
 ```
 
----
-
-# Conjunto de dados
-
-Podemos observar que as censuras presentes nesse conjunto de dados são do tipo aleatória e a direita. Além disso, o tratamento utilizado nesses pacientes foi sempre o mesmo (TT2), dessa forma, não havendo um grupo de controle.
-
 
 ---
 
-# Metodologia
+## Metodologia
 
-Nesse trabalho, nosso objetivo é a análise de dados de sobrevivência com censura a direita a partir de uma abordagem não-paramétrica, em que o interesse é identificar fatores de prognóstico para o mioma múltiplo a partir da amostra coletada.
+**Objetivo:** é a análise de dados de sobrevivência com censura a direita a partir de uma abordagem não-paramétrica, em que o interesse é identificar fatores de prognóstico para o mioma múltiplo a partir da amostra coletada.
 
-Vamos usar os metodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo
+**Métodos:** métodos K-M, tabela atuarial e Nelson-Aalen para analisar os dados nesse estudo
 
----
-
-# Análise de dados 
+--
  
-Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de Kaplan-Meier.
+Inicialmente, realizaremos a estimativa da Curva de Sobrevivência dos pacientes com Mieloma, utilizando o estimador de **Kaplan-Meier**.
 
----
-
-### K-M Algoritmo
 
 ```{r}
 km_fit <- survfit(Surv(time, event) ~ 1, data = df)
@@ -162,36 +157,39 @@ Definida a função de sobrevivência, podemos verificar a curva de sobrevivênc
 
 ---
 
+## K-M Algoritmo
+
 ```{r}
 ggsurvplot(km_fit, data = df, risk.table = FALSE)
 ```
 
 ---
 
-Podemos verificar os resultados da estimação completa, usando `summary()`
+## K-M Algoritmo
 
 ```{r}
 summary(km_fit, times = seq(0,70,5))
 ```
 
----
+  - Não há tempo mediano, uma vez que as observações se encerram antes de serem obtidas probabilidades de sobrevivência de 50%.
 
-De  início, percebemos que não há tempo mediano, uma vez que as observações se encerram antes de serem obtidas probabilidades de sobrevivência de 50%.
-
-Sendo assim, os pacientes em estudo apresentariam uma probabilidade de sobrevivência de 60% após cinco anos.
+  - Os pacientes em estudo apresentariam uma probabilidade de sobrevivência de 60% após cinco anos.
 
 ---
 
-#### Determinando o *Cutpoint* para cada expressão gênica
+## *Cutpoints'* para cada expressão gênica
 
-Temos diferentes níveis de expressão para os genes CRIM1", "DEPDC1", "WHSC1", "CCND1", "IRF4" e "TP53".
-Entretanto, a categorização desses valores nos auxilia na comparação entre as variáveis. O R nos permite estimar os *cutpoints* (Pontos de corte) ideais, para cada variável numérica, permitindo reduzir os diversos valores a duas categorias: "high" e "low".
+ - Diferentes níveis de expressão para os genes CRIM1", "DEPDC1", "WHSC1", "CCND1", "IRF4" e "TP53". A categorização desses valores nos auxilia na comparação entre as variáveis
+ 
+ - Estimar os *cutpoints* (pontos de corte) ideais para cada variável numérica, reduzindo os diversos valores a duas categorias: `high` e `low`. 
+ 
+O teste utilizado é o ***Maximally Selected Rank statistics***, que assume que um valor desconhecido de $X$, determina dois grupos distintos em $Y$.
 
-O teste utilizado é o ***Maximally Selected Rank statistics***, que assume que um valor desconhecido de $X$, determina dois grupos distintos em $Y$. No nosso, caso, o teste busca encontrar o valor númerico do nível da expressão gênica que melhor separa os valores em dois grupos distintos.
+No nosso, caso, o teste busca encontrar o valor númerico do nível da expressão gênica que melhor separa os valores em dois grupos distintos.
 
 ---
 
-##### Cutpoint ótimo de cada expressão
+## Cutpoint ótimo de cada expressão
 
 ```{r}
 res.cut <- surv_cutpoint(df, time = "time", event = "event",
@@ -202,27 +200,27 @@ kable(summary(res.cut))
 
 ---
 
-#### Gráfico para cada "Cutpoint"
+## Estimando os cutpoints
 
 ```{r fig.height=4}
-plot(res.cut, gex_cols, pallete = "npg")
+plot(res.cut, "IRF4", pallete = "npg")
 ```
 
-Definidos os melhores pontos que dividem os valores das expressões gênicas em dois grupos distintos, podemos enfim, categorizar nossas variáveis em dois grupos: ***high*** e ***low***.
-
 ---
+
+## Estimando os cutpoints
 
 ```{r}
 res.cat <- surv_categorize(res.cut)
 kable(head(res.cat))
 ```
+---
 
+--- 
 
-#### Curvas de sobrevivência para cada expressão gênica
+## Curva do gene CCND1
 
-Curvas de sobrevivência para cada expressão gênica, considerando os níveis *low* e *high*.
-
-```{r fig.height=14, fig.width=10}
+```{r}
 #defyning each fit for each gene
 fit1 <- survfit(Surv(time, event) ~ CCND1, data = res.cat)
 fit2 <- survfit(Surv(time, event) ~ CRIM1, data = res.cat)
@@ -235,20 +233,66 @@ fit6 <- survfit(Surv(time, event) ~ WHSC1, data = res.cat)
 
 fit_list <- list(fit1,fit2,fit3,fit4,fit5,fit6)
 
-splots <- fit_list %>% map(~ggsurvplot(fit1, data = df,
+splots <- fit_list %>% map(~ggsurvplot(.x, data = df,
                                        risk.table = TRUE,
                                        risk.table.height = 0.3,
-                                       ggtheme = theme_minimal())) 
+                                       ggtheme = theme_minimal()))
+```
 
-#arrange multiple ggsurvplots  
-arrange_ggsurvplots(splots, print = TRUE, 
-                    ncol = 3, nrow = 2)
+
+```{r}
+splots[1]
 
 ```
 
 ---
 
-##### Curvas de sobrevivência para os diferentes grupos moleculares
+## Curva do gene CRIM1
+
+```{r}
+splots[2]
+
+```
+
+---
+
+## Curva do gene DEPDC1
+
+```{r}
+splots[3]
+
+```
+
+---
+
+## Curva do gene IRF4
+
+```{r}
+splots[4]
+
+```
+
+---
+
+## Curva do gene TP53
+
+```{r}
+splots[5]
+
+```
+
+---
+
+## Curva do gene WHSC1
+
+```{r}
+splots[6]
+
+```
+
+---
+
+## Curvas para os diferentes grupos moleculares
 
 ```{r}
 # Survival curves with global p-value
@@ -264,18 +308,23 @@ ggsurvplot(fit2, data = myeloma,
 
 ---
 
-O gráfico acima expõe todas as curvas de sobrevivência para os diferentes grupos moleculares. 
+## Testes de hipótese
 
 Em nosso teste de hipótese temos duas hipóteses possíveis:
 
-$H_0:$ Não há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
-$H_1$ Há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+ - $H_0:$ Não há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
+
+ - $H_1$ Há diferença entre as curvas de sobrevivência para os diferentes grupos moleculares.
 
 Em nosso teste, utilizamos por padrão um $\alpha = 0.05$, ou seja, nosso Intervalo de Confiança é de 95%. 
 
-O valor-p resposta é um valor global que apenas nos indica se há alguma diferença entre as curvas de sobrevivência. Como $p = 0.047 < 0.05$, podemos rejeitar $H_0$ e concluir que existe uma diferença entre os grupos moleculares.
+O valor-p resposta é um valor global que apenas nos indica se há alguma diferença entre as curvas de sobrevivência. 
+
+Como $p = 0.047 < 0.05$, podemos rejeitar $H_0$ e concluir que existe uma diferença entre os grupos moleculares.
 
 ---
+
+## Teste log-rank
 
 Podemos realizar um Log-rank teste pareado entre os diferentes grupos moleculares, a fim de identificar quais grupos apresentam diferenças significativas de risco de morte.
 
@@ -297,9 +346,9 @@ De acordo com o teste Log-Rank entre os grupos moleculares, podemos concluir que
 
 ---
 
-#### Curvas de Sobrevivencia para o status da amplificação do cromossomo *chr1q21*
+## Curvas de Sobrevivencia para o status da amplificação do cromossomo *chr1q21*
 
-```{r}
+```{r fig.height= 6}
 ggsurvplot(
    fit,                     # survfit object with calculated statistics.
    data = df,  # data used to fit survival curves. 
@@ -319,9 +368,10 @@ ggsurvplot(
 
 ---
 
-O p-valor do grafico acima é do teste log-rank, e como o valor deu menor que 0.05, podemos concluir que há evidência estatística de que as curvas de sobrevivência são diferentes para a amplificação do cromossomo *chr1q21. Em seguida temos que fazer o teste 2 a 2 para essas curvas
+## Curvas de Sobrevivencia para o status da amplificação do cromossomo *chr1q21*
 
----
+
+O p-valor do grafico acima é do teste log-rank, podemos concluir que há evidência estatística de que as curvas de sobrevivência são diferentes para a amplificação do cromossomo *chr1q21.
 
 
 ```{r}
@@ -335,32 +385,26 @@ Podemos concluir que existe diferença significativa entre os seguintes status d
 
 ---
 
-### Algoritmo Nelson-Aalen
+## Algoritmo Nelson-Aalen
 
 ```{r}
  na_fit <- survfit(coxph(Surv(time, event) ~ 1, data = df))
  summary(na_fit, times = seq(0,70,5))
 ```
 
----
-
-```{r}
- plot(na_fit, conf.int=T,  xlab="Tempo (em meses)", ylab="S(t) estimada", bty="n")
-
-```
 
 ---
 
-### Tábua Atuarial
+## Tábua Atuarial
 
 ```{r}
-lifetab2(Surv(time, event) ~ 1, data = df, breaks = seq(0,70,5))
+lifetab2(Surv(time, event) ~ 1, data = df, breaks = seq(0,70,5))[,1:9]
 ```
 
 
 ---
 
-# Conclusão
+## Conclusão
 
 Podemos concluir que pacientes do grupo molecular Proliferation, em média, tem uma menor chance de sobrevivência em relação aos grupos Cyclin D-2 e Hyperdiploid.
 Além disso, pacientes cujo cromossomo chr1q21 possui 2 cópias tem mais chance de sobreviver do que quando o cromossomo tem 3 cópias.
@@ -369,8 +413,7 @@ Não nota-se uma diferença significativa nos três estimadores K-M, N-A e Aturi
 
 ---
 
-# Bibliografia
+## Bibliografia
 
-```{r}
-citation("survminer")
-```
+- Kassambara A, Kosinski M, Biecek P (2021). _survminer: Drawing Survival Curves using 'ggplot2'_. R package version 0.4.9,
+ <https://CRAN.R-project.org/package=survminer>
