@@ -1,6 +1,9 @@
 ---
 title: "Atividade III - SME0821"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 date: '2022-07-13'
 ---
 ```{r setup, include=FALSE}
@@ -11,10 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(survival)
-library(survminer)
-library(pander)
-library(biostat3)
-library(rankhazard)
 ```
 
 # Conjunto de dados utilizado
@@ -22,7 +21,6 @@ library(rankhazard)
 df <- survminer::myeloma %>% rownames_to_column %>% tibble
 # Substituindo o indicador de censura por um tipo booleano
 df$event <- as.logical(df$event)
-head(df)
 str(df)
 ```
 
@@ -33,22 +31,8 @@ summary(cph.df)
 ```
 
 ```{r}
-# rankhazardplot()
-(dfCopy <- df)
-dfCopy$event <- ifelse(dfCopy$event == FALSE,0,1)
-
-str(dfCopy)
-(dfCopyCopy = subset(dfCopy, select = -c(molecular_group,chr1q21_status,treatment,rowname)))
-
-```
-
-
-## Transformando os dados booleanos em dados numericos devido a erro na funcao
-
-# Visualization of relative importance of covariates
-```{r}
-(cph.full <- coxph(Surv(time,event)~CCND1+DEPDC1+TP53+WHSC1, dfCopyCopy, x=TRUE))
-rankhazardplot(cph.full,data=dfCopyCopy)
+(cph.full <- coxph(Surv(time,event)~CCND1+DEPDC1+TP53+WHSC1, df, x=TRUE))
+summary(cph.full)
 ```
 
 # Linha 18: qual covariaveis utilizar; Resposta: são as covariaveis que nao 
@@ -61,6 +45,6 @@ cox.zph(cph.full)
 par(mfrow=c(1,1))
 plot(cox.zph(cph.full))
 
-km_fit <- survfit(Surv(time, event) ~ 1, data = df)
+km_fit <- survfit(Surv(time, event) ~ DEPDC1, data = df)
 km_fit
 ```
