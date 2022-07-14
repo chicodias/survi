@@ -1,0 +1,50 @@
+---
+title: "Atividade III - SME0821"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+date: '2022-07-13'
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(survival)
+```
+
+# Conjunto de dados utilizado
+```{r}
+df <- survminer::myeloma %>% rownames_to_column %>% tibble
+# Substituindo o indicador de censura por um tipo booleano
+df$event <- as.logical(df$event)
+str(df)
+```
+
+```{r}
+# Cox proportional hazard model
+cph.df <- coxph(Surv(time,event)~CCND1+DEPDC1+TP53+WHSC1,df)
+summary(cph.df)
+```
+
+```{r}
+(cph.full <- coxph(Surv(time,event)~CCND1+DEPDC1+TP53+WHSC1, df, x=TRUE))
+summary(cph.full)
+```
+
+# Linha 18: qual covariaveis utilizar; Resposta: são as covariaveis que nao 
+# se cruzam na curva de sobrevivencia: CCND1, DEPDC1, TP53, WHSC1
+
+# Test the proportional hazards assumption
+
+```{r}
+cox.zph(cph.full)
+par(mfrow=c(1,1))
+plot(cox.zph(cph.full))
+
+km_fit <- survfit(Surv(time, event) ~ DEPDC1, data = df)
+km_fit
+```
